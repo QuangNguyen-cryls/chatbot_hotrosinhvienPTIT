@@ -1,0 +1,24 @@
+# Python virtual environment (Cực kỳ nặng)
+.venv/
+venv/
+ENV/
+
+# Thư mục cấu hình IDE
+.idea/
+.vscode/
+
+# Python bytecode
+__pycache__/
+*.py[cod]
+
+# Dữ liệu và Model AI (Thủ phạm gây lỗi 2.96 GiB)
+datasets/
+models/
+RasaData/
+*.csv
+*.txt
+# (Nếu các file .txt hay .csv này là code/hướng dẫn thì đừng bỏ, 
+# nhưng nếu là data để train chatbot thì nên bỏ)
+
+# Các thư mục không liên quan
+chatbot-arya/

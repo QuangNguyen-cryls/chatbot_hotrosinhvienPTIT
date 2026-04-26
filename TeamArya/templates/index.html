@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Trợ lý thông minh PTIT</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+        }
+
+        body {
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .chat-container {
+            width: 100%;
+            max-width: 1400px;
+            height: 800px;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            margin: 20px auto;
+        }
+
+        .chat-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 15px 20px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            color: white;
+        }
+
+        .bot-avatar {
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .header-info h1 {
+            font-size: 1.2rem;
+            margin-bottom: 4px;
+        }
+
+        .header-info p {
+            font-size: 0.9rem;
+            opacity: 0.9;
+        }
+
+        .engine-toggle {
+            margin-left: auto;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .engine-select {
+            appearance: none;
+            background: rgba(255,255,255,0.15);
+            border: 1px solid rgba(255,255,255,0.3);
+            color: white;
+            padding: 8px 12px;
+            border-radius: 8px;
+            cursor: pointer;
+        }
+
+        .chat-messages {
+            flex: 1;
+            padding: 20px 30px;
+            overflow-y: auto;
+            background: #f8fafc;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .message {
+            display: flex;
+            flex-direction: column;
+            max-width: 90%;
+            animation: fadeIn 0.3s ease-out;
+        }
+
+        .user-message {
+            align-self: flex-end;
+            max-width: 70%;
+        }
+
+        .bot-message {
+            align-self: flex-start;
+            max-width: 95%;
+        }
+
+        .bot-message.welcome-message {
+            max-width: 100%;
+        }
+
+        .bot-message.welcome-message .message-content {
+            padding: 25px 30px;
+            margin: 0 -10px;
+        }
+
+        .message-content {
+            padding: 15px 20px;
+            border-radius: 12px;
+            font-size: 0.95rem;
+            line-height: 1.6;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+        }
+
+        /* Giảm khoảng cách giữa các câu cho phần chào hỏi để giống câu trả lời thường */
+        .bot-message.welcome-message .message-content {
+            line-height: 1;
+        }
+        .bot-message.welcome-message .message-content p {
+            margin: 1px 0;
+        }
+        .bot-message.welcome-message .message-content p:first-child { margin-top: 0; }
+        .bot-message.welcome-message .message-content p:last-child { margin-bottom: 0; }
+
+        .user-message .message-content {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-bottom-right-radius: 4px;
+        }
+
+        .bot-message .message-content {
+            background: white;
+            color: #2c3e50;
+            border-bottom-left-radius: 4px;
+            border: 1px solid #e8eef3;
+        }
+
+        .chat-input {
+            padding: 20px;
+            background: white;
+            border-top: 1px solid #e8eef3;
+        }
+
+        .input-container {
+            display: flex;
+            gap: 10px;
+        }
+
+        input[type="text"] {
+            flex: 1;
+            padding: 12px 16px;
+            border: 1px solid #e8eef3;
+            border-radius: 8px;
+            font-size: 0.95rem;
+            transition: border-color 0.3s;
+        }
+
+        input[type="text"]:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        button {
+            padding: 12px 24px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 0.95rem;
+            cursor: pointer;
+            transition: opacity 0.3s;
+        }
+
+        button:hover {
+            opacity: 0.9;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+    </style>
+</head>
+<body>
+<div class="chat-container">
+    <div class="chat-header">
+        <div class="bot-avatar">
+            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M12 2C6.48 2 2 6.48 2 12C2 17.52 6.48 22 12 22C17.52 22 22 17.52 22 12C22 6.48 17.52 2 12 2ZM12 5C13.66 5 15 6.34 15 8C15 9.66 13.66 11 12 11C10.34 11 9 9.66 9 8C9 6.34 10.34 5 12 5ZM12 19.2C9.5 19.2 7.29 17.92 6 15.98C6.03 13.99 10 12.9 12 12.9C13.99 12.9 17.97 13.99 18 15.98C16.71 17.92 14.5 19.2 12 19.2Z"
+                      fill="white"/>
+            </svg>
+        </div>
+        <div class="header-info">
+            <h1>Trợ lý thông minh PTIT</h1>
+            <p>Luôn sẵn sàng hỗ trợ bạn 24/7</p>
+        </div>
+        <div class="engine-toggle">
+            <label for="engine" style="opacity:0.9">Engine:</label>
+            <select id="engine" class="engine-select" title="Chọn bộ trả lời">
+                <option value="rasa">Rasa</option>
+                <option value="st">SentenceTransformer</option>
+            </select>
+        </div>
+    </div>
+    <div class="chat-messages">
+        <div class="message bot-message welcome-message">
+            <div class="message-content">
+                <p>Xin chào! 👋</p>
+                <p>Tôi là AI Assistant - trợ lý thông minh PTIT. Tôi có thể giúp bạn với:</p>
+                <p>• Đăng ký học phần</p>
+                <p>• Lịch học & Thi cử</p>
+                <p>• Học bổng & Học phí</p>
+                <p>• Thư viện & Tài liệu</p>
+                <p>• Ký túc xá & Đời sống</p>
+                <p>• Và nhiều thông tin khác!</p>
+            </div>
+        </div>
+    </div>
+    <div class="chat-input">
+        <div class="input-container">
+            <input type="text" placeholder="Nhập câu hỏi của bạn..." id="user-input">
+            <button onclick="sendMessage()">Gửi</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    const userInput = document.getElementById('user-input');
+    const chatMessages = document.querySelector('.chat-messages');
+
+    function createMessage(content, isUser = false) {
+        const messageDiv = document.createElement('div');
+        messageDiv.className = 'message ' + (isUser ? 'user-message' : 'bot-message');
+
+        const messageContent = document.createElement('div');
+        messageContent.className = 'message-content';
+        messageContent.textContent = content;
+
+        messageDiv.appendChild(messageContent);
+        return messageDiv;
+    }
+
+    async function sendMessage() {
+        const message = userInput.value.trim();
+        if (!message) return;
+
+        // Add user message
+        chatMessages.appendChild(createMessage(message, true));
+        userInput.value = '';
+        chatMessages.scrollTop = chatMessages.scrollHeight;
+
+        try {
+            const engine = document.getElementById('engine').value; // 'rasa' | 'st'
+            const response = await fetch('/api/chat', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({message: message, engine: engine})
+            });
+
+            const data = await response.json();
+
+            // Add bot response
+            chatMessages.appendChild(createMessage(data.response));
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        } catch (error) {
+            console.error('Error:', error);
+            chatMessages.appendChild(createMessage('Xin lỗi, có lỗi xảy ra. Vui lòng thử lại sau.'));
+        }
+    }
+
+    userInput.addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') {
+            sendMessage();
+        }
+    });
+</script>
+</body>
+</html>
